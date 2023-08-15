@@ -1,8 +1,6 @@
 package database
 
-import (
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-)
+import "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 
 type (
 	Database interface {

@@ -1,8 +1,6 @@
 package repository
 
-import (
-	"github.com/unawaretub86/payments-events-processor/internal/domain/repository/database"
-)
+import "github.com/unawaretub86/payments-events-processor/internal/domain/repository/database"
 
 type (
 	RepositoryPayment interface {
