@@ -19,16 +19,7 @@ func HandleSQSMessage(ctx context.Context, sqsEvent events.SQSEvent) error {
 
 	requestId := lc.AwsRequestID
 
-	var messageBody string
-	var source string
-
-	for _, record := range sqsEvent.Records {
-		messageBody = record.Body
-
-		sourceAttr := record.MessageAttributes["Source"]
-
-		source = *sourceAttr.StringValue
-	}
+	messageBody, source := getSQSInfo(sqsEvent)
 
 	databaseInstance := createDatabaseInstance()
 
@@ -46,6 +37,21 @@ func HandleSQSMessage(ctx context.Context, sqsEvent events.SQSEvent) error {
 	_, err := useCaseInstance.CreatePayment(messageBody, requestId)
 
 	return err
+}
+
+func getSQSInfo(sqsEvent events.SQSEvent) (string, string) {
+	var messageBody string
+	var source string
+
+	for _, record := range sqsEvent.Records {
+		messageBody = record.Body
+
+		sourceAttr := record.MessageAttributes["Source"]
+
+		source = *sourceAttr.StringValue
+	}
+
+	return messageBody, source
 }
 
 func createDatabaseInstance() database.Database {
