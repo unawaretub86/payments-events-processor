@@ -14,6 +14,8 @@ import (
 	"github.com/unawaretub86/payments-events-processor/internal/domain/usecase"
 )
 
+const sqsName = "payments-processor"
+
 func HandleSQSMessage(ctx context.Context, sqsEvent events.SQSEvent) error {
 	lc, _ := lambdacontext.FromContext(ctx)
 
@@ -27,7 +29,7 @@ func HandleSQSMessage(ctx context.Context, sqsEvent events.SQSEvent) error {
 
 	useCaseInstance := usecase.NewUsePayment(repoInstance)
 
-	if source == "payments-processor" {
+	if source == sqsName {
 		if err := useCaseInstance.UpdatePayment(messageBody, requestId); err != nil {
 			fmt.Printf("[RequestId: %s], [Error: %v]", requestId, err)
 			return err
