@@ -1,10 +1,13 @@
 package repository
 
-import "github.com/unawaretub86/payments-events-processor/internal/domain/repository/database"
+import (
+	"github.com/unawaretub86/payments-events-processor/internal/domain/entities"
+	"github.com/unawaretub86/payments-events-processor/internal/domain/repository/database"
+)
 
 type (
 	RepositoryPayment interface {
-		CreatePayment(string, string) (*string, error)
+		CreatePayment(entities.ProcessPaymentRequest, string) (*entities.ProcessPaymentRequest, error)
 		UpdatePayment(string, string) (*string, *string, error)
 	}
 

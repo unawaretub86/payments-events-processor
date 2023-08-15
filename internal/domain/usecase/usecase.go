@@ -3,12 +3,13 @@ package usecase
 import (
 	"os"
 
+	"github.com/unawaretub86/payments-events-processor/internal/domain/entities"
 	"github.com/unawaretub86/payments-events-processor/internal/domain/repository"
 )
 
 type (
 	UseCase interface {
-		CreatePayment(string, string) (*string, error)
+		CreatePayment(string, string) (*entities.ProcessPaymentRequest, error)
 		UpdatePayment(string, string) error
 	}
 

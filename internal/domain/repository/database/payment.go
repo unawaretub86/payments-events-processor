@@ -6,14 +6,14 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/unawaretub86/payments-events-processor/internal/domain/entities"
 )
 
-func (d *databasePayment) CreatePayment(orderId, requestId string) (*string, error) {
-	status := "PENDING"
+func (d *databasePayment) CreatePayment(order entities.ProcessPaymentRequest, requestId string) (*entities.ProcessPaymentRequest, error) {
 
 	item := map[string]*dynamodb.AttributeValue{
-		"orderId": {S: aws.String(orderId)},
-		"Status":  {S: aws.String(status)},
+		"orderId": {S: aws.String(order.OrderID)},
+		"Status":  {S: aws.String(order.Status)},
 	}
 
 	_, err := d.dynamodb.PutItem(&dynamodb.PutItemInput{
@@ -21,14 +21,14 @@ func (d *databasePayment) CreatePayment(orderId, requestId string) (*string, err
 		Item:      item,
 	})
 
-	fmt.Printf("[RequestId: %s], [PutItem result: %v]", requestId, orderId)
+	fmt.Printf("[RequestId: %s], [PutItem result: %v]", requestId, order.OrderID)
 
 	if err != nil {
 		fmt.Printf("[RequestId: %s], [Error: %v]", requestId, err)
 		return nil, err
 	}
 
-	return &orderId, nil
+	return &order, nil
 }
 
 func (d *databasePayment) UpdatePayment(orderId, requestId string) (*string, *string, error) {

@@ -11,14 +11,18 @@ import (
 	"github.com/unawaretub86/payments-events-processor/internal/domain/entities"
 )
 
-func (useCase useCase) CreatePayment(body, requestId string) (*string, error) {
+func (useCase useCase) CreatePayment(body, requestId string) (*entities.ProcessPaymentRequest, error) {
 	order, err := convertToStruct(body, requestId)
 	if err != nil {
 		fmt.Printf("[RequestId: %s], [Error: %v]", requestId, err)
 		return nil, err
 	}
 
-	return useCase.repositoryPayment.CreatePayment(order.OrderID, requestId)
+	status := "PENDING"
+
+	order.Status = status
+
+	return useCase.repositoryPayment.CreatePayment(*order, requestId)
 }
 
 func (useCase useCase) UpdatePayment(body, requestId string) error {

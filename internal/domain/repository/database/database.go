@@ -1,10 +1,13 @@
 package database
 
-import "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+import (
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/unawaretub86/payments-events-processor/internal/domain/entities"
+)
 
 type (
 	Database interface {
-		CreatePayment(string, string) (*string, error)
+		CreatePayment(entities.ProcessPaymentRequest, string) (*entities.ProcessPaymentRequest, error)
 		UpdatePayment(string, string) (*string, *string, error)
 	}
 
