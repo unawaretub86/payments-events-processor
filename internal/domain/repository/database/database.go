@@ -7,6 +7,7 @@ import (
 type (
 	Database interface {
 		CreatePayment(string, string) (*string, error)
+		UpdatePayment(string, string) (*string, *string, error)
 	}
 
 	databasePayment struct {

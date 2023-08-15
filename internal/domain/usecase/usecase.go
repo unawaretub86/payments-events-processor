@@ -9,6 +9,7 @@ import (
 type (
 	UseCase interface {
 		CreatePayment(string, string) (*string, error)
+		UpdatePayment(string, string) error
 	}
 
 	useCase struct {

@@ -7,6 +7,7 @@ import (
 type (
 	RepositoryPayment interface {
 		CreatePayment(string, string) (*string, error)
+		UpdatePayment(string, string) (*string, *string, error)
 	}
 
 	repositoryPayment struct {

@@ -11,28 +11,50 @@ import (
 	"github.com/unawaretub86/payments-events-processor/internal/domain/entities"
 )
 
+const paid = "PAID"
+
 func (useCase useCase) CreatePayment(body, requestId string) (*string, error) {
 	order, err := convertToStruct(body, requestId)
 	if err != nil {
-		fmt.Printf("[RequestId: %s], [Error: %v]", err, requestId)
+		fmt.Printf("[RequestId: %s], [Error: %v]", requestId, err)
 		return nil, err
 	}
 
 	return useCase.repositoryPayment.CreatePayment(order.OrderID, requestId)
 }
 
+func (useCase useCase) UpdatePayment(body, requestId string) error {
+	payment, err := convertToStruct(body, requestId)
+	if err != nil {
+		fmt.Printf("[RequestId: %s], [Error: %v]", requestId, err)
+		return err
+	}
+
+	orderIdResponse, status, err := useCase.repositoryPayment.UpdatePayment(payment.OrderID, requestId)
+	if err != nil {
+		fmt.Printf("[RequestId: %s], [Error: %v]", requestId, err)
+		return err
+	}
+
+	if *status != paid {
+		return useCase.sendSQS(orderIdResponse, status, &requestId)
+	}
+
+	return nil
+}
+
 func convertToStruct(body, requestId string) (*entities.ProcessPaymentRequest, error) {
 	var orderRequest entities.ProcessPaymentRequest
 	err := json.Unmarshal([]byte(body), &orderRequest)
 	if err != nil {
-		fmt.Printf("[RequestId: %s][Error marshaling API Gateway request: %v]", err, requestId)
+		fmt.Printf("[RequestId: %s][Error marshaling API Gateway request: %v]", requestId, err)
 		return nil, err
 	}
 
 	return &orderRequest, nil
 }
 
-func (useCase useCase) sendSQS(totalPrice int64, orderID, requestId string) error {
+func (useCase useCase) sendSQS(orderID, status, requestId *string) error {
 
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
@@ -42,13 +64,13 @@ func (useCase useCase) sendSQS(totalPrice int64, orderID, requestId string) erro
 	queueURL := useCase.queueURL
 
 	orderEvent := entities.ProcessPaymentRequest{
-		OrderID: orderID,
-		Status:  "HI",
+		OrderID: *orderID,
+		Status:  *status,
 	}
 
 	orderJSON, err := json.Marshal(orderEvent)
 	if err != nil {
-		fmt.Printf("[RequestId: %s][Error marshaling order request: %v]", err, requestId)
+		fmt.Printf("[RequestId: %p][Error marshaling order request: %v]", requestId, err)
 		return err
 	}
 
@@ -58,7 +80,7 @@ func (useCase useCase) sendSQS(totalPrice int64, orderID, requestId string) erro
 	})
 
 	if err != nil {
-		fmt.Printf("[RequestId: %s][Error sending message to SQS: %v]", err, requestId)
+		fmt.Printf("[RequestId: %p][Error sending message to SQS: %v]", requestId, err)
 		return err
 	}
 

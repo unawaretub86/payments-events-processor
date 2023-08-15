@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambdacontext"
@@ -13,7 +14,7 @@ import (
 	"github.com/unawaretub86/payments-events-processor/internal/domain/usecase"
 )
 
-func HandleSQSMessage(ctx context.Context, sqsEvent events.SQSEvent) error {
+func HandleSQSMessage(ctx context.Context, sqsEvent events.SQSEvent, request events.APIGatewayProxyRequest) error {
 	lc, _ := lambdacontext.FromContext(ctx)
 
 	requestId := lc.AwsRequestID
@@ -24,11 +25,20 @@ func HandleSQSMessage(ctx context.Context, sqsEvent events.SQSEvent) error {
 		messageBody = record.Body
 	}
 
+	bodyRequest := request.Body
+
 	databaseInstance := createDatabaseInstance()
 
 	repoInstance := repository.NewRepository(databaseInstance)
 
 	useCaseInstance := usecase.NewUsePayment(repoInstance)
+
+	if bodyRequest != "" {
+		if err := useCaseInstance.UpdatePayment(bodyRequest, requestId); err != nil {
+			fmt.Printf("[RequestId: %s], [Error: %v]", requestId, err)
+			return err
+		}
+	}
 
 	_, err := useCaseInstance.CreatePayment(messageBody, requestId)
 
