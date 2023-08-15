@@ -14,18 +14,21 @@ import (
 	"github.com/unawaretub86/payments-events-processor/internal/domain/usecase"
 )
 
-func HandleSQSMessage(ctx context.Context, sqsEvent events.SQSEvent, request events.APIGatewayProxyRequest) error {
+func HandleSQSMessage(ctx context.Context, sqsEvent events.SQSEvent) error {
 	lc, _ := lambdacontext.FromContext(ctx)
 
 	requestId := lc.AwsRequestID
 
 	var messageBody string
+	var source string
 
 	for _, record := range sqsEvent.Records {
 		messageBody = record.Body
-	}
 
-	bodyRequest := request.Body
+		sourceAttr := record.MessageAttributes["Source"]
+
+		source = *sourceAttr.StringValue
+	}
 
 	databaseInstance := createDatabaseInstance()
 
@@ -33,8 +36,8 @@ func HandleSQSMessage(ctx context.Context, sqsEvent events.SQSEvent, request eve
 
 	useCaseInstance := usecase.NewUsePayment(repoInstance)
 
-	if bodyRequest != "" {
-		if err := useCaseInstance.UpdatePayment(bodyRequest, requestId); err != nil {
+	if source == "payments-processor" {
+		if err := useCaseInstance.UpdatePayment(messageBody, requestId); err != nil {
 			fmt.Printf("[RequestId: %s], [Error: %v]", requestId, err)
 			return err
 		}
