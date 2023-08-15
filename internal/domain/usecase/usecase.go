@@ -17,7 +17,7 @@ type (
 	}
 )
 
-func NewUseOrder(repositoryPayment repository.RepositoryPayment) UseCase {
+func NewUsePayment(repositoryPayment repository.RepositoryPayment) UseCase {
 	queueURL := os.Getenv("SQS_URL")
 
 	return &useCase{

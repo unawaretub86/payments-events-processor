@@ -28,7 +28,7 @@ func HandleSQSMessage(ctx context.Context, sqsEvent events.SQSEvent) error {
 
 	repoInstance := repository.NewRepository(databaseInstance)
 
-	useCaseInstance := usecase.NewUseOrder(repoInstance)
+	useCaseInstance := usecase.NewUsePayment(repoInstance)
 
 	_, err := useCaseInstance.CreatePayment(messageBody, requestId)
 
