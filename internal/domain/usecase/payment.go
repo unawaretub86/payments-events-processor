@@ -11,8 +11,6 @@ import (
 	"github.com/unawaretub86/payments-events-processor/internal/domain/entities"
 )
 
-const paid = "PAID"
-
 func (useCase useCase) CreatePayment(body, requestId string) (*string, error) {
 	order, err := convertToStruct(body, requestId)
 	if err != nil {
@@ -36,11 +34,7 @@ func (useCase useCase) UpdatePayment(body, requestId string) error {
 		return err
 	}
 
-	if *status != paid {
-		return useCase.sendSQS(orderIdResponse, status, &requestId)
-	}
-
-	return nil
+	return useCase.sendSQS(orderIdResponse, status, &requestId)
 }
 
 func (useCase useCase) sendSQS(orderID, status, requestId *string) error {

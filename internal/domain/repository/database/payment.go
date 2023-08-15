@@ -2,10 +2,10 @@ package database
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 )
 
 func (d *databasePayment) CreatePayment(orderId, requestId string) (*string, error) {
@@ -32,34 +32,34 @@ func (d *databasePayment) CreatePayment(orderId, requestId string) (*string, err
 }
 
 func (d *databasePayment) UpdatePayment(orderId, requestId string) (*string, *string, error) {
-	status := "PAID"
 
-	update := expression.Set(expression.Name("Status"), expression.Value(status))
+	paid := "PAID"
 
-	expr, err := expression.NewBuilder().WithUpdate(update).Build()
-	if err != nil {
-		fmt.Printf("[RequestId: %s], [Error: %v]", requestId, err)
-		return nil, nil, err
-	}
-
-	primaryKey := map[string]*dynamodb.AttributeValue{
-		"OrderId": {
-			S: aws.String(orderId),
+	input := &dynamodb.UpdateItemInput{
+		ExpressionAttributeNames: map[string]*string{
+			"#Y": aws.String("Status"),
 		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":y": {
+				S: aws.String(paid),
+			},
+		},
+		TableName: aws.String(d.table),
+		Key: map[string]*dynamodb.AttributeValue{
+			"orderId": {
+				S: aws.String(orderId),
+			},
+		},
+		ReturnValues:     aws.String("ALL_NEW"),
+		UpdateExpression: aws.String("SET #Y = :y"),
 	}
 
-	if _, err = d.dynamodb.UpdateItem(&dynamodb.UpdateItemInput{
-		TableName:                 aws.String(d.table),
-		Key:                       primaryKey,
-		ExpressionAttributeNames:  expr.Names(),
-		ExpressionAttributeValues: expr.Values(),
-		UpdateExpression:          expr.Update(),
-	}); err != nil {
-		fmt.Printf("[RequestId: %s], [Error: %v]", requestId, err)
-		return nil, nil, err
+	_, err := d.dynamodb.UpdateItem(input)
+	if err != nil {
+		log.Fatalf("Got error calling UpdateItem: %s", err)
 	}
 
 	fmt.Printf("[RequestId: %s], [UpdateItem result: %v]", requestId, orderId)
 
-	return &orderId, &status, nil
+	return &orderId, &paid, nil
 }
