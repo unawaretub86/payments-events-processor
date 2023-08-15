@@ -43,17 +43,6 @@ func (useCase useCase) UpdatePayment(body, requestId string) error {
 	return nil
 }
 
-func convertToStruct(body, requestId string) (*entities.ProcessPaymentRequest, error) {
-	var orderRequest entities.ProcessPaymentRequest
-	err := json.Unmarshal([]byte(body), &orderRequest)
-	if err != nil {
-		fmt.Printf("[RequestId: %s][Error marshaling API Gateway request: %v]", requestId, err)
-		return nil, err
-	}
-
-	return &orderRequest, nil
-}
-
 func (useCase useCase) sendSQS(orderID, status, requestId *string) error {
 
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
@@ -93,4 +82,15 @@ func (useCase useCase) sendSQS(orderID, status, requestId *string) error {
 	}
 
 	return nil
+}
+
+func convertToStruct(body, requestId string) (*entities.ProcessPaymentRequest, error) {
+	var orderRequest entities.ProcessPaymentRequest
+	err := json.Unmarshal([]byte(body), &orderRequest)
+	if err != nil {
+		fmt.Printf("[RequestId: %s][Error marshaling API Gateway request: %v]", requestId, err)
+		return nil, err
+	}
+
+	return &orderRequest, nil
 }

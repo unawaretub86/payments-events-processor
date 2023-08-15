@@ -9,7 +9,6 @@ import (
 )
 
 func (d *databasePayment) CreatePayment(orderId, requestId string) (*string, error) {
-
 	status := "PENDING"
 
 	item := map[string]*dynamodb.AttributeValue{
@@ -43,8 +42,15 @@ func (d *databasePayment) UpdatePayment(orderId, requestId string) (*string, *st
 		return nil, nil, err
 	}
 
+	primaryKey := map[string]*dynamodb.AttributeValue{
+		"OrderId": {
+			S: aws.String(orderId),
+		},
+	}
+
 	if _, err = d.dynamodb.UpdateItem(&dynamodb.UpdateItemInput{
 		TableName:                 aws.String(d.table),
+		Key:                       primaryKey,
 		ExpressionAttributeNames:  expr.Names(),
 		ExpressionAttributeValues: expr.Values(),
 		UpdateExpression:          expr.Update(),
@@ -56,5 +62,4 @@ func (d *databasePayment) UpdatePayment(orderId, requestId string) (*string, *st
 	fmt.Printf("[RequestId: %s], [UpdateItem result: %v]", requestId, orderId)
 
 	return &orderId, &status, nil
-
 }
