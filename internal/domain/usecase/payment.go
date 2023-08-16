@@ -42,7 +42,6 @@ func (useCase useCase) UpdatePayment(body, requestId string) error {
 }
 
 func (useCase useCase) sendSQS(orderID, status, requestId *string) error {
-
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
