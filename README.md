@@ -37,6 +37,6 @@ git clone https://github.com/unawaretub86/payments-events-processor
 
 4. Una vez se haya creado una orden en https://github.com/unawaretub86/order-processor-events esta enviara un mensaje via SQS , recibiremos el mensaje y lo procesaremos guardando un objeto payment en DynamoDB con el orderId y el status "PENDING".
 
-4. Una vez completado el despliegue, debera haber enviado una peticion http PATCH con el orderId a su función Lambda creada en el servicio https://github.com/unawaretub86/payments-events-processor.
+4. Una vez completado el pago, se debera haber enviado una peticion http PATCH con el orderId a su función Lambda creada en el servicio https://github.com/unawaretub86/payments-processor.
 
 5. Una vez enviada la peticion esta lambda procesara el mensaje enviado, actualizara un pago en dynamoDB con el status "PAID" , esta enviara un mensaje via SQS a https://github.com/unawaretub86/order-processor-events. 
