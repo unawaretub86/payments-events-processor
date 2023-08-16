@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+
+Resources:
+  PaymentSQS:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: paymentSQS
+
+  OrdersPaymentsSQS:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: ordersPaymentsSQS
+
+  PaymentProcessor:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: PaymentProcessor
+      Handler: main
+      Runtime: go1.x
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource:
+                - !GetAtt PaymentSQS.Arn
+      Environment:
+        Variables:
+          QUEUE_URL: !GetAtt PaymentSQS.QueueUrl
+
+  PaymentProcessorEvents:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: PaymentProcessorEvents
+      Handler: main 
+      Runtime: go1.x
+      CodeUri: cmd/api/main.go 
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:ReceiveMessage
+              Resource:
+                - !GetAtt OrdersPaymentsSQS.Arn
+
+  PaymentsTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: payments
+      AttributeDefinitions:
+        - AttributeName: orderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: orderId
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
