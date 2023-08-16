@@ -20,12 +20,6 @@ Resources:
       Runtime: go1.x
       Policies:
         - AWSLambdaBasicExecutionRole
-        - Statement:
-            - Effect: Allow
-              Action:
-                - sqs:SendMessage
-              Resource:
-                - !GetAtt PaymentSQS.Arn
       Environment:
         Variables:
           QUEUE_URL: !GetAtt PaymentSQS.QueueUrl
@@ -39,12 +33,6 @@ Resources:
       CodeUri: cmd/api/main.go 
       Policies:
         - AWSLambdaBasicExecutionRole
-        - Statement:
-            - Effect: Allow
-              Action:
-                - sqs:ReceiveMessage
-              Resource:
-                - !GetAtt OrdersPaymentsSQS.Arn
 
   PaymentsTable:
     Type: 'AWS::DynamoDB::Table'
